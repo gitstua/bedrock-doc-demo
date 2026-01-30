@@ -1,5 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as bedrock from "aws-cdk-lib/aws-bedrock";
@@ -21,6 +22,46 @@ export class BedrockKbWithS3SourceStack extends cdk.Stack {
     const textField = "text";
     const metadataField = "metadata";
     // ================================================================
+
+    // VPC for private networking (where supported via VPC endpoints)
+    const vpc = new ec2.Vpc(this, "BedrockVpc", {
+      maxAzs: 2,
+      natGateways: 0,
+      subnetConfiguration: [
+        {
+          name: "private-isolated",
+          subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+        },
+      ],
+    });
+
+    const vpceSecurityGroup = new ec2.SecurityGroup(this, "VpcEndpointSg", {
+      vpc,
+      description: "Security group for VPC interface endpoints",
+      allowAllOutbound: true,
+    });
+
+    vpc.addGatewayEndpoint("S3GatewayEndpoint", {
+      service: ec2.GatewayVpcEndpointAwsService.S3,
+    });
+
+    const region = cdk.Stack.of(this).region;
+    const addInterfaceEndpoint = (id: string, serviceName: string) =>
+      vpc.addInterfaceEndpoint(id, {
+        service: new ec2.InterfaceVpcEndpointService(
+          `com.amazonaws.${region}.${serviceName}`,
+          443
+        ),
+        subnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
+        securityGroups: [vpceSecurityGroup],
+        privateDnsEnabled: true,
+      });
+
+    addInterfaceEndpoint("BedrockEndpoint", "bedrock");
+    addInterfaceEndpoint("BedrockRuntimeEndpoint", "bedrock-runtime");
+    addInterfaceEndpoint("BedrockAgentEndpoint", "bedrock-agent");
+    addInterfaceEndpoint("BedrockAgentRuntimeEndpoint", "bedrock-agent-runtime");
+    addInterfaceEndpoint("OpenSearchServerlessEndpoint", "aoss");
 
     // Execution role for the Knowledge Base (created cleanly by CDK)
     const kbRole = new iam.Role(this, "BedrockKnowledgeBaseRole", {
@@ -89,6 +130,10 @@ export class BedrockKbWithS3SourceStack extends cdk.Stack {
 
     new cdk.CfnOutput(this, "DocsPrefix", {
       value: docsPrefix,
+    });
+
+    new cdk.CfnOutput(this, "VpcId", {
+      value: vpc.vpcId,
     });
 
     new cdk.CfnOutput(this, "KnowledgeBaseId", {

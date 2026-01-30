@@ -64,3 +64,12 @@ You can configure the app through:
 - Region is set to `ap-southeast-2`
 - Uses Claude 3 Haiku model by default
 - Authentication uses AWS access key and secret
+- The CDK stack creates a VPC with private subnets and adds VPC endpoints for
+  Bedrock, Bedrock Runtime, Bedrock Agent, Bedrock Agent Runtime, S3, and
+  OpenSearch Serverless to enable private networking where supported.
+- Knowledge Bases are managed services and do not run inside your VPC; private
+  connectivity is achieved via VPC endpoints for your clients and (optionally)
+  your OpenSearch Serverless collection.
+- If your OpenSearch Serverless collection is private, ensure its network
+  policy allows the VPC endpoint created by this stack and the Bedrock service
+  role has access to the collection.
