@@ -1,0 +1,22 @@
+{
+  "name": "bedrock-kb-s3-cdk",
+  "version": "1.0.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "synth": "cdk synth",
+    "deploy": "cdk deploy",
+    "diff": "cdk diff"
+  },
+  "devDependencies": {
+    "aws-cdk": "2.160.0",
+    "typescript": "~5.4.5",
+    "@types/node": "^20.11.30"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.160.0",
+    "constructs": "^10.3.0"
+  }
+}
