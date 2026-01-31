@@ -31,13 +31,13 @@ This repository contains three main components:
 For a detailed explanation of the architecture, components, and workflow, see **[ARCHITECTURE.md](ARCHITECTURE.md)**.
 
 **Quick Overview**:
-```
-User → Streamlit App → Bedrock Agent Runtime API → Knowledge Base
-                                                    ↓
-                                         ┌──────────┴──────────┐
-                                         ↓                     ↓
-                                    S3 Bucket          OpenSearch Serverless
-                                (Source Documents)     (Vector Embeddings)
+```mermaid
+flowchart LR
+    User --> App[Streamlit App]
+    App --> API[Bedrock Agent Runtime API]
+    API --> KB[Knowledge Base]
+    KB --> S3[S3 Bucket<br/>Source Documents]
+    KB --> OS[OpenSearch Serverless<br/>Vector Store]
 ```
 
 ## 🚀 Quick Start
@@ -198,6 +198,26 @@ BEDROCK_MODEL_ARN = "arn:aws:bedrock:ap-southeast-2::foundation-model/anthropic.
 - Verify documents are uploaded to the `kb/` prefix in S3
 - Trigger Knowledge Base sync after uploading documents
 - Check OpenSearch collection is accessible by the Knowledge Base
+
+## 💰 Cost Estimation
+
+I deployed this, loaded a 40MB document and played with it whilst developing the UI. these were my costs:
+
+Estimated AWS costs for running with a **40MB document** (Sydney region):
+
+| Component | Cost | Notes |
+|-----------|------|-------|
+| **S3 Vectors** | ~$0.003/month | 40MB at $0.06/GB storage |
+| **S3 Source Storage** | ~$0.001/month | 40MB at $0.024/GB |
+| **Bedrock Embedding** | ~$0.25 one-time | ~2.5M tokens at $0.0001/1K tokens |
+| **Claude 3 Haiku (per query)** | ~$0.001/query | ~1.5K tokens per query |
+| **S3 Vectors Queries** | ~$0.0025/1K queries | $2.50 per million API calls |
+
+**Monthly Totals** (assuming 1,000 queries/month):
+- **Estimated**: ~$1-2/month (after initial embedding)
+
+> [!TIP]
+> Using S3 as a vector store is significantly cheaper than OpenSearch Serverless (~$174-350/month). S3 Vectors has no minimum compute costs - you only pay for storage and queries.
 
 ## 📚 Additional Resources
 
