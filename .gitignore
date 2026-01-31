@@ -2,3 +2,10 @@
 app/.streamlit/secrets.toml
 .ruff_cache/
 app/venv/
+
+.env
+venv/
+vueapp/backend/venv/
+__pycache__/
+*.pyc
+*.pyo
