@@ -14,4 +14,4 @@ fi
 
 echo "Starting Docker containers..."
 # Use -f to specify the compose file location
-docker-compose -f vueapp/docker-compose.yml up --build
+docker-compose -f vueapp/docker-compose.yml up --build "$@"
