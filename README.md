@@ -43,13 +43,35 @@ BEDROCK_MODEL_ARN = "arn:aws:bedrock:ap-southeast-2::foundation-model/anthropic.
    - Create access key → choose "Application running outside AWS"
    - Copy the Access key ID and Secret access key into `app/.streamlit/secrets.toml`
 
-## Running the App
+## Running the Apps
+
+### Option 1: Streamlit App (Original)
 
 ```bash
 cd app
 source venv/bin/activate
 streamlit run app.py
 ```
+
+### Option 2: Vue & FastAPI App (New)
+
+This version uses a modern Vue 3 frontend and a FastAPI backend.
+
+#### 1. Start the Backend
+```bash
+cd vueapp/backend
+source venv/bin/activate
+# Install deps if first time: pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+#### 2. Start the Frontend
+```bash
+cd vueapp/frontend
+# Install deps if first time: npm install
+npm run dev
+```
+
 
 ## Configuration
 
