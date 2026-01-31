@@ -15,32 +15,15 @@ echo "Stopping existing container (if any)..."
 docker stop "$CONTAINER_NAME" 2>/dev/null || true
 docker rm "$CONTAINER_NAME" 2>/dev/null || true
 
-# Prepare environment variables arguments
+# Prepare environment variable arguments
+ENV_FILE="./.env"
 ENV_ARGS=()
 
-# Check if secrets.toml exists and parse it
-SECRETS_FILE="$APP_DIR/.streamlit/secrets.toml"
-if [ -f "$SECRETS_FILE" ]; then
-    echo "Loading secrets from $SECRETS_FILE..."
-    while IFS='=' read -r key value; do
-        # Skip comments and empty lines
-        [[ "$key" =~ ^#.*$ ]] && continue
-        [[ -z "$key" ]] && continue
-
-        # Trim whitespace
-        key=$(echo "$key" | xargs)
-        value=$(echo "$value" | xargs)
-
-        # Remove quotes from value if present
-        value="${value%\"}"
-        value="${value#\"}"
-
-        if [ -n "$key" ]; then
-            ENV_ARGS+=("-e" "$key=$value")
-        fi
-    done < "$SECRETS_FILE"
+if [ -f "$ENV_FILE" ]; then
+    echo "Loading environment variables from $ENV_FILE..."
+    ENV_ARGS=("--env-file" "$ENV_FILE")
 else
-    echo "No secrets.toml found at $SECRETS_FILE. Skipping environment variables injection."
+    echo "No .env file found at $ENV_FILE. Skipping environment variables injection."
 fi
 
 echo "Running container: $CONTAINER_NAME..."
