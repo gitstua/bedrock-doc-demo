@@ -1,6 +1,7 @@
 import streamlit as st
 import boto3
 import json
+import os
 from typing import Dict, Any
 from streamlit.errors import StreamlitSecretNotFoundError
 
@@ -13,9 +14,9 @@ st.markdown("Chat with Amazon Bedrock for Doc assistance")
 
 def get_secret(key: str, default: str = "") -> str:
     try:
-        return st.secrets.get(key, default)
-    except StreamlitSecretNotFoundError:
-        return default
+        return st.secrets.get(key, os.environ.get(key, default))
+    except (StreamlitSecretNotFoundError, FileNotFoundError):
+        return os.environ.get(key, default)
 
 # Initialize session state
 if "messages" not in st.session_state:
